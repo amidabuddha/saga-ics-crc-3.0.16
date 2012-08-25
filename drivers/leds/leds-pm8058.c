@@ -161,7 +161,7 @@ static void led_alarm_handler(struct alarm *alarm)
 	queue_work(g_led_work_queue, &ldata->led_work);
 }
 
-extern void pm8058_pwm_led_brightness_set(struct led_classdev *led_cdev,
+static void pm8058_pwm_led_brightness_set(struct led_classdev *led_cdev,
 					  enum led_brightness brightness)
 {
 	struct pm8058_led_data *ldata;
