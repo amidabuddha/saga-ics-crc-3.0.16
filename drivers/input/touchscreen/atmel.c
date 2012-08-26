@@ -1341,12 +1341,14 @@ static void multi_input_report(struct atmel_ts_data *ts)
             barrier[1] = true;
             if ((ts->finger_data[loop_i].x > prevx) &&
                 (ts->finger_data[loop_i].y > 950)) {
+              if (ts->finger_data[loop_i].x > 840) {
                 if (exec_count) {
                   printk(KERN_INFO "[sweep2wake]: ON.\n");
                   sweep2wake_pwrtrigger();
                   exec_count = false;
                   break;
                 }
+	      }	
             }
           }
         }
@@ -1370,12 +1372,14 @@ static void multi_input_report(struct atmel_ts_data *ts)
             barrier[1] = true;
             if ((ts->finger_data[loop_i].x < prevx) &&
                 (ts->finger_data[loop_i].y > 950)) {
+              if (ts->finger_data[loop_i].x < 250) {
                 if (exec_count) {
                   printk(KERN_INFO "[sweep2wake]: OFF.\n");
                   sweep2wake_pwrtrigger();
                   exec_count = false;
                   break;
                 }
+	      }
             }
           }
         }
