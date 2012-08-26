@@ -175,10 +175,6 @@ config CPU_FREQ_DEFAULT_GOV_SCARY
 	help
 		Use the CPUFreq governor 'scary' as default.	
 
-config CPU_FREQ_DEFAULT_GOV_PEGASUSQ
-	bool "pegasusq"
-	select CPU_FREQ_GOV_PEGASUSQ
-
 endchoice
 
 config CPU_FREQ_GOV_PERFORMANCE
@@ -403,9 +399,6 @@ config CPU_FREQ_GOV_SCARY
 		scary - a governor for cabbages
 
 		If in doubt, say N.
-
-config CPU_FREQ_GOV_PEGASUSQ
-	tristate "'pegasusq' cpufreq policy governor"
 
 config CPU_FREQ_DVFS_MONITOR
 	bool "dvfs monitor"
