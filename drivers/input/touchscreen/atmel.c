@@ -1341,14 +1341,12 @@ static void multi_input_report(struct atmel_ts_data *ts)
             barrier[1] = true;
             if ((ts->finger_data[loop_i].x > prevx) &&
                 (ts->finger_data[loop_i].y > 950)) {
-              if (ts->finger_data[loop_i].x > 840) {
                 if (exec_count) {
                   printk(KERN_INFO "[sweep2wake]: ON.\n");
                   sweep2wake_pwrtrigger();
                   exec_count = false;
                   break;
-                }
-	      }	
+                }	
             }
           }
         }
@@ -1372,14 +1370,12 @@ static void multi_input_report(struct atmel_ts_data *ts)
             barrier[1] = true;
             if ((ts->finger_data[loop_i].x < prevx) &&
                 (ts->finger_data[loop_i].y > 950)) {
-              if (ts->finger_data[loop_i].x < 250) {
                 if (exec_count) {
                   printk(KERN_INFO "[sweep2wake]: OFF.\n");
                   sweep2wake_pwrtrigger();
                   exec_count = false;
                   break;
                 }
-	      }
             }
           }
         }
@@ -1474,7 +1470,7 @@ static irqreturn_t atmel_irq_thread(int irq, void *ptr)
 #ifdef CONFIG_TOUCHSCREEN_ATMEL_SWEEP2WAKE
        /* if finger released, reset count & barriers */
       if ((((ts->finger_count > 0)?1:0) == 0) && (s2w_switch > 0)) {
-        if ((scr_suspended == 2) &&
+        if ((s2w_switch == 2) &&
 	    (scr_suspended == true) &&
             (led_exec_count == false) &&
             (scr_on_touch == false) &&
