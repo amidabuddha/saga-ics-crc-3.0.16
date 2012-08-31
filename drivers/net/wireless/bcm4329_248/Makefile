@@ -20,3 +20,7 @@ obj-$(CONFIG_BCM4329_248) += bcm4329.o
 bcm4329-objs += $(DHDOFILES)
 EXTRA_CFLAGS = $(DHDCFLAGS)
 EXTRA_LDFLAGS += --strip-debug
+
+# Ignore warnings to prevent build breaks when using gcc 4.5.0+
+CFLAGS_REMOVE_wl_iw.o = -Werror
+
