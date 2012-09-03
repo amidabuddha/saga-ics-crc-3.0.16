@@ -1135,9 +1135,12 @@ CONFIG_BRIDGE_NETFILTER=y
 CONFIG_NETDEV_10000=y
 # CONFIG_HOSTAP is not set
 CONFIG_BCM4329_248=m
-CONFIG_BCM4329_SOFTAP=y
+# CONFIG_BCM4329_SOFTAP is not set
 CONFIG_BCM4329_FW_PATH="/system/etc/firmware/fw_bcm4329.bin"
 CONFIG_BCM4329_NVRAM_PATH="/proc/calibration"
+CONFIG_BCMDHD=m
+CONFIG_BCMDHD_FW_PATH="/system/etc/firmware/fw_bcmdhd.bin"
+CONFIG_BCMDHD_NVRAM_PATH="/proc/calibration"
 
 #
 # Kineto GAN
