@@ -1222,7 +1222,7 @@ config COMPAT_BRK
 
 choice
 	prompt "Choose SLAB allocator"
-	default SLUB
+	default SLQB
 	help
 	   This option allows to select a slab allocator.
 
@@ -1251,6 +1251,11 @@ config SLOB
 	   SLOB replaces the stock allocator with a drastically simpler
 	   allocator. SLOB is generally more space efficient but
 	   does not perform as well on large systems.
+
+config SLQB
+  	bool "SLQB (Queued allocator)"
+  	help
+     		SLQB is a proposed new slab allocator.
 
 endchoice
 
@@ -1300,7 +1305,7 @@ config HAVE_GENERIC_DMA_COHERENT
 config SLABINFO
 	bool
 	depends on PROC_FS
-	depends on SLAB || SLUB_DEBUG
+	depends on SLAB || SLUB_DEBUG || SLQB
 	default y
 
 config RT_MUTEXES
