@@ -38,7 +38,7 @@
 #define MICRO_FREQUENCY_MIN_SAMPLE_RATE (10000)
 #define MIN_FREQUENCY_UP_THRESHOLD (11)
 #define MAX_FREQUENCY_UP_THRESHOLD (100)
-#define DEF_SUSPEND_FREQ (384000)
+#define DEF_SUSPEND_FREQ (368640)
 
 /*
 * The polling frequency of this governor depends on the capability of

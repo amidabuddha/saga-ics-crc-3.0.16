@@ -113,7 +113,7 @@ static unsigned long pump_down_step;
  */
 static unsigned int early_suspended;
 
-#define SCREEN_OFF_LOWEST_STEP 		(0xffffffff)
+#define SCREEN_OFF_LOWEST_STEP 		(368640)
 #define DEFAULT_SCREEN_OFF_MIN_STEP	(SCREEN_OFF_LOWEST_STEP)
 static unsigned long screen_off_min_step;
 
@@ -152,12 +152,12 @@ static inline void fix_screen_off_min_step(struct cpufreq_lulzactive_cpuinfo *pc
 	
 	if (DEFAULT_SCREEN_OFF_MIN_STEP == screen_off_min_step) 
 		for(screen_off_min_step=0;
-		pcpu->lulzfreq_table[screen_off_min_step].frequency != 500000;
+		pcpu->lulzfreq_table[screen_off_min_step].frequency != 368640;
 		screen_off_min_step++);
 	
 	if (screen_off_min_step >= pcpu->lulzfreq_table_size)
 		for(screen_off_min_step=0;
-		pcpu->lulzfreq_table[screen_off_min_step].frequency != 500000;
+		pcpu->lulzfreq_table[screen_off_min_step].frequency != 368640;
 		screen_off_min_step++);
 }
 
