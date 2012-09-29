@@ -261,32 +261,6 @@ config CPU_FREQ_GOV_ONDEMAND_2_PHASE
 	help
 	  '2-phase' - This driver adds a new algo to save power
 
-config CPU_FREQ_GOV_ONDEMANDX
-	tristate "'ondemandx' cpufreq policy governor"
-	select CPU_FREQ_TABLE
-	help
-	  'ondemand' - This driver adds a dynamic cpufreq policy governor.
-	  The governor does a periodic polling and
-	  changes frequency based on the CPU utilization.
-	  The support for this governor depends on CPU capability to
-	  do fast frequency switching (i.e, very low latency frequency
-	  transitions).
-
-	  To compile this driver as a module, choose M here: the
-	  module will be called cpufreq_ondemand.
-
-          For details, take a look at linux/Documentation/cpu-freq.
-
-	  If in doubt, say N.
-
-config CPU_FREQ_GOV_ONDEMANDX_INPUT
-	bool "Ramp up CPU frequency on input events"
-	default y
-	depends on CPU_FREQ_GOV_ONDEMANDX
-	help
-	  Enable installation of an input event handler which will ramp up the
-	  CPU to max frequency when an input event is received.
-
 config CPU_FREQ_GOV_INTERACTIVE
 	tristate "'interactive' cpufreq policy governor"
 	help
