@@ -36,7 +36,8 @@
 #include <mach/debug_mm.h>
 #include <linux/rtc.h>
 
-#include <linux/android_pmem.h>
+#include <linux/memory_alloc.h>
+#include <mach/msm_memtypes.h>
 #include <linux/slab.h>
 #include <linux/delay.h>
 
@@ -848,7 +849,7 @@ static int audpcm_in_release(struct inode *inode, struct file *file)
 	if (audio->enc_id >=0) audpreproc_aenc_free(audio->enc_id);
 
 	iounmap(audio->data);
-	pmem_kfree(audio->phys);
+	free_contiguous_memory_by_paddr(audio->phys);
 
 	mutex_unlock(&audio->lock);
 
@@ -869,7 +870,6 @@ static int audpcm_in_open(struct inode *inode, struct file *file)
 	const char *modname;	
 	int rc;
 
-
 	audio = kzalloc(sizeof(struct audio_in), GFP_KERNEL);
 
 	if (!audio) return -ENOMEM;
@@ -878,12 +878,12 @@ static int audpcm_in_open(struct inode *inode, struct file *file)
 	current_audio_in = audio;
 #endif
 
-        audio->phys = pmem_kalloc(DMASZ, PMEM_MEMTYPE_EBI1 | PMEM_ALIGNMENT_4K);
+	audio->phys = allocate_contiguous_memory_nomap(DMASZ, MEMTYPE_EBI1, SZ_4K);
         if (!IS_ERR((void *) audio->phys)) {
 		audio->data = ioremap(audio->phys, DMASZ);
                 if (!audio->data) {
        	                MM_ERR("Could not remap DMA buffers\n");
-               	        pmem_kfree(audio->phys);
+			free_contiguous_memory_by_paddr(audio->phys);
 			kfree(audio);
                        	return -ENOMEM;
                 }
@@ -956,7 +956,7 @@ evt_error:
 
 no_aenc:
         iounmap(audio->data);
-	pmem_kfree(audio->phys);
+	free_contiguous_memory_by_paddr(audio->phys);
 	kfree(audio);	
 
 	return rc;
