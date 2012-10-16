@@ -8359,8 +8359,7 @@ int wait_for_ap_ready(int sec)
 #endif
 
 
-static int
-wl_iw_set_ap_security(struct net_device *dev, struct ap_profile *ap)
+int wl_iw_set_ap_security(struct net_device *dev, struct ap_profile *ap)
 {
 	int wsec = 0;
 	int wpa_auth = 0;
