@@ -501,9 +501,13 @@ si_detach(si_t *sih)
 
 
 #if !defined(BCMBUSTYPE) || (BCMBUSTYPE == SI_BUS)
-	if (sii != &ksii)
+	if (sii != &ksii) {
 #endif	/* !BCMBUSTYPE || (BCMBUSTYPE == SI_BUS) */
+		if (sii->osh)
 		MFREE(sii->osh, sii, sizeof(si_info_t));
+#if !defined(BCMBUSTYPE) || (BCMBUSTYPE == SI_BUS)
+	}
+#endif	/* !BCMBUSTYPE || (BCMBUSTYPE == SI_BUS) */
 }
 
 void *

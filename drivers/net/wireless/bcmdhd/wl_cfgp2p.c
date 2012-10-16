@@ -595,8 +595,7 @@ wl_cfgp2p_escan(struct wl_priv *wl, struct net_device *dev, u16 active,
 	    (num_chans & WL_SCAN_PARAMS_COUNT_MASK));
 
 	for (i = 0; i < num_chans; i++) {
-		if (i <= (sizeof(eparams->params.channel_list) / sizeof(int)))
-			eparams->params.channel_list[i] = htodchanspec(channels[i]);
+		eparams->params.channel_list[i] = htodchanspec(channels[i]);
 	}
 	eparams->version = htod32(ESCAN_REQ_VERSION);
 	eparams->action =  htod16(action);
@@ -668,6 +667,10 @@ exit:
 /* Check whether the given IE looks like WFA P2P IE. */
 #define wl_cfgp2p_is_p2p_ie(ie, tlvs, len)	wl_cfgp2p_has_ie(ie, tlvs, len, \
 		(const uint8 *)WFA_OUI, WFA_OUI_LEN, WFA_OUI_TYPE_P2P)
+// WFD_INSERT_IE +++BEGIN+++
+#define wl_cfgp2p_is_htc_ie(ie, tlvs, len)	wl_cfgp2p_has_ie(ie, tlvs, len, \
+		(const uint8 *)"\x00\x09\x2D", 3, 0x01)
+// WFD_INSERT_IE ---FINAL---
 /* Delete and Set a management vndr ie to firmware
  * Parameters:
  * @wl       : wl_private data
@@ -796,10 +799,13 @@ wl_cfgp2p_set_management_ie(struct wl_priv *wl, struct net_device *ndev, s32 bss
 				ie_len = ie_buf[pos++];
 				if ((ie_id == DOT11_MNG_VS_ID) &&
 				   (wl_cfgp2p_is_wps_ie(&ie_buf[pos-2], NULL, 0) ||
+				   // WFD_INSERT_IE +++BEGIN+++
+				   wl_cfgp2p_is_htc_ie(&ie_buf[pos-2], NULL, 0) ||  //[Simon]
+				   // WFD_INSERT_IE ---FINAL---
 					wl_cfgp2p_is_p2p_ie(&ie_buf[pos-2], NULL, 0))) {
-					CFGP2P_INFO(("DELELED ID : %d, Len : %d , OUI :"
+					printf("DELELED ID : %d, Len : %d , OUI :"
 						"%02x:%02x:%02x\n", ie_id, ie_len, ie_buf[pos],
-						ie_buf[pos+1], ie_buf[pos+2]));
+						ie_buf[pos+1], ie_buf[pos+2]);
 					ret = wl_cfgp2p_vndr_ie(wl, ndev, bssidx, pktflag,
 						ie_buf+pos, VNDR_SPEC_ELEMENT_ID, ie_buf+pos+3,
 						ie_len-3, delete);
@@ -822,10 +828,13 @@ wl_cfgp2p_set_management_ie(struct wl_priv *wl, struct net_device *ndev, s32 bss
 				ie_len = ie_buf[pos++];
 				if ((ie_id == DOT11_MNG_VS_ID) &&
 				   (wl_cfgp2p_is_wps_ie(&ie_buf[pos-2], NULL, 0) ||
+				   // WFD_INSERT_IE +++BEGIN+++
+				   wl_cfgp2p_is_htc_ie(&ie_buf[pos-2], NULL, 0) ||  //[Simon]
+				   // WFD_INSERT_IE ---FINAL---
 					wl_cfgp2p_is_p2p_ie(&ie_buf[pos-2], NULL, 0))) {
-					CFGP2P_INFO(("ADDED ID : %d, Len : %d , OUI :"
+					printf("ADDED ID : %d, Len : %d , OUI :"
 						"%02x:%02x:%02x\n", ie_id, ie_len, ie_buf[pos],
-						ie_buf[pos+1], ie_buf[pos+2]));
+						ie_buf[pos+1], ie_buf[pos+2]);
 					if ((bcm_add_ie_reverse)&&(wl_cfgp2p_is_p2p_ie(&ie_buf[pos-2], NULL, 0))) {
 						if (p2pie_count >= 2) {
 							CFGP2P_ERR(("more than 2 p2p ie set, ignore!\n"));
@@ -1179,10 +1188,10 @@ wl_cfgp2p_action_tx_complete(struct wl_priv *wl, struct net_device *ndev,
 			wl_set_p2p_status(wl, ACTION_TX_NOACK);
 			CFGP2P_ERR(("WLC_E_ACTION_FRAME_COMPLETE : NO ACK\n"));
 		}
-		wake_up_interruptible(&wl->netif_change_event);
 	} else {
 		CFGP2P_INFO((" WLC_E_ACTION_FRAME_OFFCHAN_COMPLETE is received,"
 					"status : %d\n", status));
+		wake_up_interruptible(&wl->netif_change_event);
 	}
 	return ret;
 }
