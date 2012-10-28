@@ -805,7 +805,7 @@ static int atmel_touch_sysfs_init(void)
 
 static void atmel_touch_sysfs_deinit(void)
 {
-#ifdef CONFIG_TOUCHSCREEN_CYPRESS_SWEEP2WAKE
+#ifdef CONFIG_TOUCHSCREEN_ATMEL_SWEEP2WAKE
 	sysfs_remove_file(android_touch_kobj, &dev_attr_sweep2wake.attr);
 #endif
 	sysfs_remove_file(android_touch_kobj, &dev_attr_info.attr);
@@ -1320,28 +1320,28 @@ static void multi_input_report(struct atmel_ts_data *ts)
 #ifdef CONFIG_TOUCHSCREEN_ATMEL_SWEEP2WAKE
 			//left -> right
 			if ((s2w_switch > 0) && (scr_suspended == true) && (ts->finger_count == 1)) {
-				prevx = 0;
-				nextx = 333;
+				prevx = 30;
+				nextx = 200;
 				if ((barrier[0] == true) ||
 				   ((ts->finger_data[loop_i].x > prevx) &&
 				    (ts->finger_data[loop_i].x < nextx) &&
-				    (ts->finger_data[loop_i].y > 950))) {
+				    (ts->finger_data[loop_i].y > 980))) {
 					if ((led_exec_count == true) && (scr_on_touch == false) && (s2w_switch == 2)) {
 						pm8058_drvx_led_brightness_set(sweep2wake_leddev, 255);
 						printk(KERN_INFO "[sweep2wake]: activated button backlight.\n");
 						led_exec_count = false;
 					}
-					prevx = 333;
-					nextx = 667;
+					prevx = 200;
+					nextx = 800;
 					barrier[0] = true;
 					if ((barrier[1] == true) ||
 					   ((ts->finger_data[loop_i].x > prevx) &&
 					    (ts->finger_data[loop_i].x < nextx) &&
-					    (ts->finger_data[loop_i].y > 950))) {
-						prevx = 667;
+					    (ts->finger_data[loop_i].y > 980))) {
+						prevx = 800;
 						barrier[1] = true;
 						if ((ts->finger_data[loop_i].x > prevx) &&
-						    (ts->finger_data[loop_i].y > 950)) {
+						    (ts->finger_data[loop_i].y > 980)) {
 							if (exec_count) {
 								printk(KERN_INFO "[sweep2wake]: POWER ON.\n");
 								sweep2wake_pwrtrigger();
@@ -1355,22 +1355,22 @@ static void multi_input_report(struct atmel_ts_data *ts)
 			} else if ((s2w_switch > 0) && (scr_suspended == false) && (ts->finger_count == 1)) {
 				scr_on_touch=true;
 				prevx = 1000;
-				nextx = 667;
+				nextx = 800;
 				if ((barrier[0] == true) ||
 				   ((ts->finger_data[loop_i].x < prevx) &&
 			    	    (ts->finger_data[loop_i].x > nextx) &&
-				    (ts->finger_data[loop_i].y > 950))) {
-					prevx = 667;
-					nextx = 333;
+				    (ts->finger_data[loop_i].y > 980))) {
+					prevx = 800;
+					nextx = 200;
 					barrier[0] = true;
 					if ((barrier[1] == true) ||
 					   ((ts->finger_data[loop_i].x < prevx) &&
 					    (ts->finger_data[loop_i].x > nextx) &&
-					    (ts->finger_data[loop_i].y > 950))) {
-						prevx = 333;
+					    (ts->finger_data[loop_i].y > 980))) {
+						prevx = 200;
 						barrier[1] = true;
 						if ((ts->finger_data[loop_i].x < prevx) &&
-						    (ts->finger_data[loop_i].y > 950)) {
+						    (ts->finger_data[loop_i].y > 980)) {
 							if (exec_count) {
 								printk(KERN_INFO "[sweep2wake]: POWER OFF.\n");
 								sweep2wake_pwrtrigger();
@@ -1484,7 +1484,6 @@ static irqreturn_t atmel_irq_thread(int irq, void *ptr)
 				barrier[0] = false;
 				barrier[1] = false;
 				scr_on_touch = false;
-				printk(KERN_INFO "[sweep2wake]: Finger released, reseting vars.\n");
 			}
 #endif
 
