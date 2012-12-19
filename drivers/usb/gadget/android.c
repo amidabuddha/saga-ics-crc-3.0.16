@@ -51,16 +51,7 @@
 #include "epautoconf.c"
 #include "composite.c"
 
-#include "f_diag.c"
-#if defined(CONFIG_USB_ANDROID_RMNET_SMD)
-#include "f_rmnet_smd.c"
-#elif defined(CONFIG_USB_ANDROID_RMNET_SDIO)
-#include "f_rmnet_sdio.c"
-#elif defined(CONFIG_USB_ANDROID_RMNET_SMD_SDIO)
-#include "f_rmnet_smd_sdio.c"
-#elif defined(CONFIG_USB_ANDROID_RMNET_BAM)
-#include "f_rmnet.c"
-#endif
+#include "f_audio_source.c"
 #include "f_mass_storage.c"
 #include "u_serial.c"
 #include "u_sdio.c"
@@ -1463,149 +1454,67 @@ static struct android_usb_function accessory_function = {
 	.ctrlrequest	= accessory_function_ctrlrequest,
 };
 
-#ifdef CONFIG_USB_ANDROID_PROJECTOR
-static int projector_function_init(struct android_usb_function *f,
-		struct usb_composite_dev *cdev)
+static int audio_source_function_init(struct android_usb_function *f,
+			struct usb_composite_dev *cdev)
 {
-	f->config = kzalloc(sizeof(struct htcmode_protocol), GFP_KERNEL);
-	if (!f->config)
+	struct audio_source_config *config;
+
+	config = kzalloc(sizeof(struct audio_source_config), GFP_KERNEL);
+	if (!config)
 		return -ENOMEM;
-
-	return projector_setup();
+	config->card = -1;
+	config->device = -1;
+	f->config = config;
+	return 0;
 }
 
-static void projector_function_cleanup(struct android_usb_function *f)
+static void audio_source_function_cleanup(struct android_usb_function *f)
 {
-
-	projector_cleanup();
-
-	if (f->config) {
-		kfree(f->config);
-		f->config = NULL;
-	}
+	kfree(f->config);
 }
 
-static int projector_function_bind_config(struct android_usb_function *f,
-		struct usb_configuration *c)
+static int audio_source_function_bind_config(struct android_usb_function *f,
+						struct usb_configuration *c)
 {
-	return projector_bind_config(c, f->config);
+	struct audio_source_config *config = f->config;
+
+	return audio_source_bind_config(c, config);
 }
 
+static void audio_source_function_unbind_config(struct android_usb_function *f,
+						struct usb_configuration *c)
+{
+	struct audio_source_config *config = f->config;
 
-static ssize_t projector_product_show(struct device *dev,
+	config->card = -1;
+	config->device = -1;
+}
+
+static ssize_t audio_source_pcm_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
 {
 	struct android_usb_function *f = dev_get_drvdata(dev);
-	struct htcmode_protocol *config = f->config;
-	return snprintf(buf, PRODUCT_NAME_MAX, "%s\n", config->product_name);
+	struct audio_source_config *config = f->config;
+
+	/* print PCM card and device numbers */
+	return sprintf(buf, "%d %d\n", config->card, config->device);
 }
 
-static DEVICE_ATTR(product, S_IRUGO | S_IWUSR, projector_product_show,
-						    NULL);
+static DEVICE_ATTR(pcm, S_IRUGO | S_IWUSR, audio_source_pcm_show, NULL);
 
-static ssize_t projector_car_model_show(struct device *dev,
-		struct device_attribute *attr, char *buf)
-{
-	struct android_usb_function *f = dev_get_drvdata(dev);
-	struct htcmode_protocol *config = f->config;
-	return snprintf(buf, CAR_MODEL_NAME_MAX, "%s\n", config->car_model);
-}
-
-static DEVICE_ATTR(car_model, S_IRUGO | S_IWUSR, projector_car_model_show,
-						    NULL);
-
-static ssize_t projector_width_show(struct device *dev,
-		struct device_attribute *attr, char *buf)
-{
-	struct android_usb_function *f = dev_get_drvdata(dev);
-	struct htcmode_protocol *config = f->config;
-	return snprintf(buf, PAGE_SIZE, "%d\n", config->server_info.width);
-}
-
-static DEVICE_ATTR(width, S_IRUGO | S_IWUSR, projector_width_show,
-						    NULL);
-
-static ssize_t projector_height_show(struct device *dev,
-		struct device_attribute *attr, char *buf)
-{
-	struct android_usb_function *f = dev_get_drvdata(dev);
-	struct htcmode_protocol *config = f->config;
-	return snprintf(buf, PAGE_SIZE, "%d\n", config->server_info.height);
-}
-
-static DEVICE_ATTR(height, S_IRUGO | S_IWUSR, projector_height_show,
-						    NULL);
-
-static ssize_t projector_rotation_show(struct device *dev,
-		struct device_attribute *attr, char *buf)
-{
-	struct android_usb_function *f = dev_get_drvdata(dev);
-	struct htcmode_protocol *config = f->config;
-	return snprintf(buf, PAGE_SIZE, "%d\n", (config->client_info.display_conf & CLIENT_INFO_SERVER_ROTATE_USED));
-}
-
-static DEVICE_ATTR(rotation, S_IRUGO | S_IWUSR, projector_rotation_show,
-						    NULL);
-
-static ssize_t projector_version_show(struct device *dev,
-		struct device_attribute *attr, char *buf)
-{
-	struct android_usb_function *f = dev_get_drvdata(dev);
-	struct htcmode_protocol *config = f->config;
-	return snprintf(buf, PAGE_SIZE, "%d\n", config->version);
-}
-
-static DEVICE_ATTR(version, S_IRUGO | S_IWUSR, projector_version_show,
-						    NULL);
-
-
-static struct device_attribute *projector_function_attributes[] = {
-	&dev_attr_product,
-	&dev_attr_car_model,
-	&dev_attr_width,
-	&dev_attr_height,
-	&dev_attr_rotation,
-	&dev_attr_version,
+static struct device_attribute *audio_source_function_attributes[] = {
+	&dev_attr_pcm,
 	NULL
 };
 
-
-struct android_usb_function projector_function = {
-	.name		= "projector",
-	.init		= projector_function_init,
-	.cleanup	= projector_function_cleanup,
-	.bind_config	= projector_function_bind_config,
-	.attributes = projector_function_attributes
+static struct android_usb_function audio_source_function = {
+	.name		= "audio_source",
+	.init		= audio_source_function_init,
+	.cleanup	= audio_source_function_cleanup,
+	.bind_config	= audio_source_function_bind_config,
+	.unbind_config	= audio_source_function_unbind_config,
+	.attributes	= audio_source_function_attributes,
 };
-#endif
-
-#ifdef CONFIG_USB_ANDROID_USBNET
-static int usbnet_function_init(struct android_usb_function *f,
-		struct usb_composite_dev *cdev)
-{
-	return usbnet_setup();
-}
-
-static int usbnet_function_bind_config(struct android_usb_function *f,
-		struct usb_configuration *c)
-{
-	return usbnet_bind_config(c);
-}
-
-static int usbnet_function_ctrlrequest(struct android_usb_function *f,
-						struct usb_composite_dev *cdev,
-						const struct usb_ctrlrequest *c)
-{
-	return usbnet_ctrlrequest(cdev, c);
-}
-
-struct android_usb_function usbnet_function = {
-	.name		= "usbnet",
-	.init		= usbnet_function_init,
-	.bind_config	= usbnet_function_bind_config,
-	.ctrlrequest	= usbnet_function_ctrlrequest,
-};
-#endif
 
 static struct android_usb_function *supported_functions[] = {
 #if 1
@@ -1618,41 +1527,8 @@ static struct android_usb_function *supported_functions[] = {
 	&ptp_function,
 #endif
 	&mass_storage_function,
-	&adb_function,
-#ifdef CONFIG_USB_ANDROID_ECM
-	&ecm_function,
-#endif
-	&diag_function,
-
-	&modem_function,
-#ifdef CONFIG_USB_ANDROID_MDM9K_MODEM
-	&modem_mdm_function,
-#endif
-	&serial_function,
-#ifdef CONFIG_USB_ANDROID_PROJECTOR
-	&projector_function,
-#endif
-#ifdef CONFIG_USB_ANDROID_ACM
-	&acm_function,
-#endif
-#if defined(CONFIG_USB_ANDROID_MDM9K_DIAG)
-	&diag_mdm_function,
-#endif
-#if defined(CONFIG_USB_ANDROID_RMNET_SMD)
-	&rmnet_smd_function,
-#elif defined(CONFIG_USB_ANDROID_RMNET_SDIO)
-	&rmnet_sdio_function,
-#elif defined(CONFIG_USB_ANDROID_RMNET_SMD_SDIO)
-	&rmnet_smd_sdio_function,
-#elif defined(CONFIG_USB_ANDROID_RMNET_BAM)
-	&rmnet_function,
-#endif
-#if 0
-	&ccid_function,
-#endif
-#ifdef CONFIG_USB_ANDROID_USBNET
-	&usbnet_function,
-#endif
+	&accessory_function,
+	&audio_source_function,
 	NULL
 #endif
 };
